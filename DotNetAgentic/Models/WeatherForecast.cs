@@ -1,4 +1,4 @@
-namespace DotNetAgentic
+namespace DotNetAgentic.Models
 {
     public class WeatherForecast
     {

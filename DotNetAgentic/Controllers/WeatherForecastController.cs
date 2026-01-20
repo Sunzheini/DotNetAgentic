@@ -1,3 +1,4 @@
+using DotNetAgentic.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DotNetAgentic.Controllers
