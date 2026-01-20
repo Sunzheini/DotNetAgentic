@@ -11,13 +11,21 @@ public class AgentService
     
     public AgentService()
     {
+        var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        const string openAiModel = "gpt-4.1-mini";
+    
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            throw new ArgumentException("OPENAI_API_KEY environment variable is not set");
+        }
+        
         // Initialize Semantic Kernel with OpenAI chat completion
         var kernelBuilder = Kernel.CreateBuilder();
         
         // Note: Replace
         kernelBuilder.AddOpenAIChatCompletion(
-            modelId: "gpt-3.5-turbo",
-            apiKey: "your-api-key-here");
+            modelId: openAiModel,
+            apiKey: apiKey);
         
         _kernel = kernelBuilder.Build();
     }

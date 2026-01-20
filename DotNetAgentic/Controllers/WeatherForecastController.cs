@@ -1,7 +1,6 @@
 using DotNetAgentic.Models;
 using Microsoft.AspNetCore.Mvc;
 
-
 namespace DotNetAgentic.Controllers
 {
     [ApiController]     // MARK this class as an API controller (enables auto features)
@@ -15,6 +14,7 @@ namespace DotNetAgentic.Controllers
 
         private readonly ILogger<WeatherForecastController> _logger = logger;
 
+        // --------------------------------------------------------------------------------------
         // HTTP GET endpoint named "GetWeatherForecast", URL: GET http://localhost:5082/WeatherForecast
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()

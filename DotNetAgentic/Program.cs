@@ -1,33 +1,52 @@
-﻿// 1. Creates the app builder with command line args
+﻿using DotNetAgentic.Services;
+using DotNetEnv;
+
+Env.Load(); 
+
+// 1. Creates the app builder with command line args
 var builder = WebApplication.CreateBuilder(args);
 
-// 2. Add MVC controllers (your AgentController, etc.)
+// 2. Load environment variables
+var openAiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+if (string.IsNullOrEmpty(openAiKey))
+{
+    Console.WriteLine("⚠️ WARNING: OPENAI_API_KEY environment variable not set!");
+    Console.WriteLine("Set it with: set OPENAI_API_KEY=your-key (Windows) or export OPENAI_API_KEY=your-key (Linux/Mac)");
+}
+
+// 3. Add MVC controllers (AgentController, etc.)
 builder.Services.AddControllers();
 
-// 3. Enable API explorer for Swagger documentation
+// 4. Enable API explorer for Swagger documentation
 builder.Services.AddEndpointsApiExplorer();
 
-// 4. Generate Swagger JSON from controllers
+// 5. Generate Swagger JSON from controllers
 builder.Services.AddSwaggerGen();
 
-// 5. BUILD the application from configured services
+// 6. Register AgentService
+builder.Services.AddScoped<AgentService>();
+
+// 7. BUILD the application from configured services
 var app = builder.Build();
 
-// 6. Only in development: Show Swagger docs
+// 8. Only in development: Show Swagger docs
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();      // Makes /swagger/v1/swagger.json available
     app.UseSwaggerUI();    // Shows UI at /swagger
 }
 
-// 7. Redirect HTTP → HTTPS (security)
+// 9. Redirect HTTP → HTTPS (security)
 app.UseHttpsRedirection();
 
-// 8. Enable authorization (for protected endpoints)
+// 10. Enable authorization (for protected endpoints)
 app.UseAuthorization();
 
-// 9. Map your controller routes (AgentController, etc.)
+// 11. Map your controller routes (AgentController, etc.)
 app.MapControllers();
 
-// 10. Run the app (starts listening for requests)
+// 12. Add a simple root endpoint
+app.MapGet("/", () => "AI Agentic API - Go to /swagger for documentation");
+
+// 13. Run the app (starts listening for requests)
 app.Run();
