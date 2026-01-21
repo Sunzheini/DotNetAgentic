@@ -58,6 +58,11 @@ dotnet restore
    "input": "How much is the temperature in Tokyo now?"
 }
 
+{
+   "toolName": "calculator",
+   "input": "1+3"
+}
+
 
 
 

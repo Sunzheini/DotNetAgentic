@@ -38,7 +38,7 @@ public class TavilySearchToolTests
     public void Name_ReturnsCorrectValue()
     {
         // Act & Assert
-        Assert.That(_tool.Name, Is.EqualTo("web_search"));
+        Assert.That(_tool.Name, Is.EqualTo("tavily_search"));
     }
     
     [Test]
@@ -57,7 +57,7 @@ public class TavilySearchToolTests
         
         // Assert
         Assert.That(tool, Is.Not.Null);
-        Assert.That(tool.Name, Is.EqualTo("web_search"));
+        Assert.That(tool.Name, Is.EqualTo("tavily_search"));
     }
     
     [Test]

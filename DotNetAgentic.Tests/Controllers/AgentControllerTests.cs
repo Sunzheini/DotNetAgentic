@@ -1,4 +1,4 @@
-﻿﻿using DotNetAgentic.Controllers;
+﻿﻿﻿using DotNetAgentic.Controllers;
 using DotNetAgentic.Models;
 using DotNetAgentic.Services;
 using DotNetAgentic.Tools;
@@ -12,13 +12,30 @@ namespace DotNetAgentic.Tests.Controllers;
 public class AgentControllerTests
 {
     private Mock<IAgentService> _mockAgentService = null!;
+    private ToolRegistry _toolRegistry = null!;
     private AgentController _controller = null!;
+    private string? _originalTavilyApiKey;
     
     [SetUp]
     public void Setup()
     {
+        // Save and clear TAVILY_API_KEY to prevent TavilySearchTool from registering
+        _originalTavilyApiKey = Environment.GetEnvironmentVariable("TAVILY_API_KEY");
+        Environment.SetEnvironmentVariable("TAVILY_API_KEY", null);
+        
         _mockAgentService = new Mock<IAgentService>();
-        _controller = new AgentController(_mockAgentService.Object);
+        _toolRegistry = new ToolRegistry();
+        _controller = new AgentController(_mockAgentService.Object, _toolRegistry);
+    }
+    
+    [TearDown]
+    public void TearDown()
+    {
+        // Restore TAVILY_API_KEY
+        if (_originalTavilyApiKey != null)
+        {
+            Environment.SetEnvironmentVariable("TAVILY_API_KEY", _originalTavilyApiKey);
+        }
     }
     
     [Test]
@@ -132,7 +149,9 @@ public class AgentControllerTests
         var resultProperty = response.GetType().GetProperty("result");
         
         Assert.That(toolProperty?.GetValue(response), Is.EqualTo("calculator"));
-        Assert.That(resultProperty?.GetValue(response), Is.Not.Null);
+        
+        var resultValue = resultProperty?.GetValue(response) as string;
+        Assert.That(resultValue, Is.EqualTo("4"));
     }
     
     [Test]
@@ -165,7 +184,7 @@ public class AgentControllerTests
     }
     
     [Test]
-    public async Task ExecuteTool_WithInvalidTool_ReturnsBadRequest()
+    public async Task ExecuteTool_WithInvalidTool_ReturnsErrorMessage()
     {
         // Arrange - Request body format: {"toolName": "invalid_tool", "input": "test"}
         var request = new AgentController.ToolExecutionRequest(
@@ -176,16 +195,20 @@ public class AgentControllerTests
         // Act
         var result = await _controller.ExecuteTool(request);
         
-        // Assert
-        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
+        // Assert - Invalid tool returns OK with error message in result
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
         
-        var badRequestResult = (BadRequestObjectResult)result;
-        Assert.That(badRequestResult.Value, Is.Not.Null);
+        var okResult = (OkObjectResult)result;
+        Assert.That(okResult.Value, Is.Not.Null);
         
-        // Verify error message
-        var errorProperty = badRequestResult.Value!.GetType().GetProperty("error");
-        var errorMessage = errorProperty?.GetValue(badRequestResult.Value) as string;
-        Assert.That(errorMessage, Does.Contain("invalid_tool"));
+        // Verify error message in result field
+        var response = okResult.Value;
+        var resultProperty = response!.GetType().GetProperty("result");
+        var resultValue = resultProperty?.GetValue(response) as string;
+        
+        Assert.That(resultValue, Does.Contain("Error"));
+        Assert.That(resultValue, Does.Contain("invalid_tool"));
+        Assert.That(resultValue, Does.Contain("not found"));
     }
     
     [Test]

@@ -10,11 +10,13 @@ namespace DotNetAgentic.Controllers;
 public class AgentController : ControllerBase
 {
     private readonly IAgentService _agentService;
+    private readonly ToolRegistry _toolRegistry;
     
     // ReSharper disable once ConvertToPrimaryConstructor
-    public AgentController(IAgentService agentService)
+    public AgentController(IAgentService agentService, ToolRegistry toolRegistry)
     {
         _agentService = agentService;
+        _toolRegistry = toolRegistry;
     }
     
     // --------------------------------------------------------------------------------------
@@ -64,35 +66,8 @@ public class AgentController : ControllerBase
     {
         try
         {
-            // Simple tool execution
-            if (request.ToolName == "calculator")
-            {
-                var tool = new CalculatorTool();
-                var result = await tool.ExecuteAsync(request.Input);
-                return Ok(new { tool = request.ToolName, result });
-            }
-            
-            if (request.ToolName == "web_search")
-            {
-                var tool = new WebSearchTool();
-                var result = await tool.ExecuteAsync(request.Input);
-                return Ok(new { tool = request.ToolName, result });
-            }
-            
-            if (request.ToolName == "tavily_search")
-            {
-                var tavilyApiKey = Environment.GetEnvironmentVariable("TAVILY_API_KEY");
-                if (string.IsNullOrEmpty(tavilyApiKey))
-                {
-                    return BadRequest(new { error = "Tavily API key is not configured" });
-                }
-                
-                var tool = new TavilySearchTool(tavilyApiKey);
-                var result = await tool.ExecuteAsync(request.Input);
-                return Ok(new { tool = request.ToolName, result });
-            }
-        
-            return BadRequest(new { error = $"Tool '{request.ToolName}' not found" });
+            var result = await _toolRegistry.ExecuteToolAsync(request.ToolName, request.Input);
+            return Ok(new { tool = request.ToolName, result });
         }
         catch (Exception ex)
         {
