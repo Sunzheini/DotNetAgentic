@@ -1,4 +1,5 @@
 ﻿using DotNetAgentic.Services;
+using DotNetAgentic.Tools;
 using DotNetEnv;
 
 Env.Load(); 
@@ -26,27 +27,34 @@ builder.Services.AddSwaggerGen();
 // 6. Register AgentService
 builder.Services.AddScoped<IAgentService, AgentService>();
 
-// 7. BUILD the application from configured services
+// 7. Register tool system
+builder.Services.AddSingleton<ToolRegistry>();
+
+// 8. Register all tools
+builder.Services.AddSingleton<ITool, CalculatorTool>();
+builder.Services.AddSingleton<ITool, WebSearchTool>();
+
+// 9. BUILD the application from configured services
 var app = builder.Build();
 
-// 8. Only in development: Show Swagger docs
+// 10. Only in development: Show Swagger docs
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();      // Makes /swagger/v1/swagger.json available
     app.UseSwaggerUI();    // Shows UI at /swagger
 }
 
-// 9. Redirect HTTP → HTTPS (security)
+// 11. Redirect HTTP → HTTPS (security)
 app.UseHttpsRedirection();
 
-// 10. Enable authorization (for protected endpoints)
+// 12. Enable authorization (for protected endpoints)
 app.UseAuthorization();
 
-// 11. Map your controller routes (AgentController, etc.)
+// 13. Map your controller routes (AgentController, etc.)
 app.MapControllers();
 
-// 12. Add a simple root endpoint
+// 14. Add a simple root endpoint
 app.MapGet("/", () => "AI Agentic API - Go to /swagger for documentation");
 
-// 13. Run the app (starts listening for requests)
+// 15. Run the app (starts listening for requests)
 app.Run();

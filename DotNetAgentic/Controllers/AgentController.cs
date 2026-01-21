@@ -1,5 +1,6 @@
 ﻿using DotNetAgentic.Models;
 using DotNetAgentic.Services;
+using DotNetAgentic.Tools;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DotNetAgentic.Controllers;
@@ -10,6 +11,7 @@ public class AgentController : ControllerBase
 {
     private readonly IAgentService _agentService;
     
+    // ReSharper disable once ConvertToPrimaryConstructor
     public AgentController(IAgentService agentService)
     {
         _agentService = agentService;
@@ -43,4 +45,40 @@ public class AgentController : ControllerBase
     {
         return Ok(new { status = "AI Agent API is running", timestamp = DateTime.UtcNow });
     }
+    
+    [HttpGet("tools")]
+    public IActionResult GetTools()
+    {
+        var tools = _agentService.GetAvailableTools();
+        var toolList = tools.Select(t => new 
+        { 
+            t.Name, 
+            t.Description 
+        });
+    
+        return Ok(toolList);
+    }
+
+    [HttpPost("tool")]
+    public async Task<IActionResult> ExecuteTool([FromBody] ToolExecutionRequest request)
+    {
+        try
+        {
+            // Simple tool execution
+            if (request.ToolName == "calculator")
+            {
+                var tool = new CalculatorTool();
+                var result = await tool.ExecuteAsync(request.Input);
+                return Ok(new { tool = request.ToolName, result });
+            }
+        
+            return BadRequest(new { error = $"Tool '{request.ToolName}' not found" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    public record ToolExecutionRequest(string ToolName, string Input);
 }

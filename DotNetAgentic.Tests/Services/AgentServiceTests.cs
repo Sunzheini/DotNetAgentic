@@ -7,12 +7,16 @@ namespace DotNetAgentic.Tests.Services;
 public class AgentServiceTests
 {
     private string? _originalApiKey;
+    private ToolRegistry _toolRegistry = null!;
     
     [SetUp]
     public void Setup()
     {
         // Save the original API key
         _originalApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        
+        // Create a tool registry for tests
+        _toolRegistry = new ToolRegistry();
     }
     
     [TearDown]
@@ -37,7 +41,7 @@ public class AgentServiceTests
         
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => 
-            new AgentService());
+            new AgentService(_toolRegistry));
         
         Assert.That(ex!.Message, Does.Contain("OPENAI_API_KEY"));
     }
@@ -49,7 +53,7 @@ public class AgentServiceTests
         Environment.SetEnvironmentVariable("OPENAI_API_KEY", "test-key");
         
         // Act
-        var service = new AgentService();
+        var service = new AgentService(_toolRegistry);
         
         // Assert
         Assert.That(service, Is.Not.Null);
@@ -68,7 +72,7 @@ public class AgentServiceTests
         }
         
         // Arrange
-        var service = new AgentService();
+        var service = new AgentService(_toolRegistry);
         
         // Act
         var result = await service.ProcessAsync("Hello AI");
@@ -91,7 +95,7 @@ public class AgentServiceTests
         }
         
         // Arrange
-        var service = new AgentService();
+        var service = new AgentService(_toolRegistry);
         
         // Act
         var result = service.ProcessAsync("").Result;

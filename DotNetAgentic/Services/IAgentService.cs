@@ -11,4 +11,10 @@ public interface IAgentService
     /// <param name="input">The user's input message</param>
     /// <returns>AI-generated response text</returns>
     Task<string> ProcessAsync(string input);
+    
+    /// <summary>
+    /// Gets all available tools that the agent can use.
+    /// </summary>
+    /// <returns>List of available tools</returns>
+    List<Tools.ITool> GetAvailableTools();
 }
