@@ -78,6 +78,19 @@ public class AgentController : ControllerBase
                 var result = await tool.ExecuteAsync(request.Input);
                 return Ok(new { tool = request.ToolName, result });
             }
+            
+            if (request.ToolName == "tavily_search")
+            {
+                var tavilyApiKey = Environment.GetEnvironmentVariable("TAVILY_API_KEY");
+                if (string.IsNullOrEmpty(tavilyApiKey))
+                {
+                    return BadRequest(new { error = "Tavily API key is not configured" });
+                }
+                
+                var tool = new TavilySearchTool(tavilyApiKey);
+                var result = await tool.ExecuteAsync(request.Input);
+                return Ok(new { tool = request.ToolName, result });
+            }
         
             return BadRequest(new { error = $"Tool '{request.ToolName}' not found" });
         }

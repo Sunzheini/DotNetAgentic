@@ -11,8 +11,15 @@ public class ToolRegistry
     
     public ToolRegistry()
     {
+        var tavilyApiKey = Environment.GetEnvironmentVariable("TAVILY_API_KEY");
+        
         RegisterTool(new CalculatorTool());
         RegisterTool(new WebSearchTool());
+        
+        if (!string.IsNullOrEmpty(tavilyApiKey))
+        {
+            RegisterTool(new TavilySearchTool(tavilyApiKey));
+        }
     }
     
     public void RegisterTool(ITool tool)

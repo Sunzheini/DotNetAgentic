@@ -34,6 +34,12 @@ builder.Services.AddSingleton<ToolRegistry>();
 builder.Services.AddSingleton<ITool, CalculatorTool>();
 builder.Services.AddSingleton<ITool, WebSearchTool>();
 
+var tavilyApiKey = Environment.GetEnvironmentVariable("TAVILY_API_KEY");
+if (!string.IsNullOrEmpty(tavilyApiKey))
+{
+    builder.Services.AddSingleton<ITool>(new TavilySearchTool(tavilyApiKey));
+}
+
 // 9. BUILD the application from configured services
 var app = builder.Build();
 

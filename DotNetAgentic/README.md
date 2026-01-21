@@ -38,7 +38,7 @@ HTTP Request File - For testing APIs
 1. Repo in GitHub with Readme and .gitignore, clone
 2. Create a ASP.NET Core Web API project, .NET 8.0
 3. Use the .gitignore here to replace the GitHub one
-4. Install Microsoft.SemanticKernel, DotNetEnv via NuGet
+4. Install Microsoft.SemanticKernel, DotNetEnv, Tavily via NuGet
 5. Create a .env file in the project root
 6. Use the .env like it is shown in Program.cs and AgentService.cs
 7. Create test project:
@@ -52,6 +52,11 @@ dotnet add package NUnit --version 4.4.0
 dotnet restore
 dotnet add package Moq
 dotnet restore
+8. Test /api/Agent/tool with:
+{
+   "toolName": "tavily_search",
+   "input": "How much is the temperature in Tokyo now?"
+}
 
 
 
