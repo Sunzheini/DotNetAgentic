@@ -2,7 +2,7 @@
 A .Net app to showcase AI agentic development.
 
 
-## Satus
+## Status
 Continue with step8
 
 
@@ -32,3 +32,42 @@ HTTP Request File - For testing APIs
 - A test script for your API endpoints
 - Used by VS Code REST Client or JetBrains HTTP Client
 - Like Postman/Insomnia but as a text file
+
+
+## Creation
+1. Repo in GitHub with Readme and .gitignore, clone
+2. Create a ASP.NET Core Web API project, .NET 8.0
+3. Use the .gitignore here to replace the GitHub one
+4. Install Microsoft.SemanticKernel, DotNetEnv via NuGet
+5. Create a .env file in the project root
+6. Use the .env like it is shown in Program.cs and AgentService.cs
+7. Create test project:
+dotnet new nunit -n DotNetAgentic.Tests
+cd DotNetAgentic.Tests
+dotnet add reference ../DotNetAgentic/DotNetAgentic.csproj
+cd..
+dotnet sln add DotNetAgentic.Tests/DotNetAgentic.Tests.csproj
+dotnet remove package NUnit
+dotnet add package NUnit --version 4.4.0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 var openAiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
 if (string.IsNullOrEmpty(openAiKey))
 {
-    Console.WriteLine("⚠️ WARNING: OPENAI_API_KEY environment variable not set!");
+    Console.WriteLine("WARNING: OPENAI_API_KEY environment variable not set!");
     Console.WriteLine("Set it with: set OPENAI_API_KEY=your-key (Windows) or export OPENAI_API_KEY=your-key (Linux/Mac)");
 }
 
