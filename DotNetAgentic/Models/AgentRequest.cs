@@ -1,6 +1,5 @@
 ﻿namespace DotNetAgentic.Models;
 
-
 /// <summary>
 /// Used to represent a request sent to an agent, including the message and optional session ID.
 /// </summary>

@@ -8,9 +8,9 @@ namespace DotNetAgentic.Controllers;
 [Route("api/[controller]")]  // Maps to /api/agent
 public class AgentController : ControllerBase
 {
-    private readonly AgentService _agentService;
+    private readonly IAgentService _agentService;
     
-    public AgentController(AgentService agentService)
+    public AgentController(IAgentService agentService)
     {
         _agentService = agentService;
     }

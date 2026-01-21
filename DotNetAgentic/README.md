@@ -49,7 +49,9 @@ cd..
 dotnet sln add DotNetAgentic.Tests/DotNetAgentic.Tests.csproj
 dotnet remove package NUnit
 dotnet add package NUnit --version 4.4.0
-
+dotnet restore
+dotnet add package Moq
+dotnet restore
 
 
 

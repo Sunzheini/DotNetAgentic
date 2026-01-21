@@ -24,7 +24,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // 6. Register AgentService
-builder.Services.AddScoped<AgentService>();
+builder.Services.AddScoped<IAgentService, AgentService>();
 
 // 7. BUILD the application from configured services
 var app = builder.Build();

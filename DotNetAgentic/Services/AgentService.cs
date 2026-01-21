@@ -5,7 +5,7 @@ namespace DotNetAgentic.Services;
 /// <summary>
 /// Represents an AI agent service that processes user input using Semantic Kernel.
 /// </summary>
-public class AgentService
+public class AgentService : IAgentService
 {
     private readonly Kernel _kernel;
     
