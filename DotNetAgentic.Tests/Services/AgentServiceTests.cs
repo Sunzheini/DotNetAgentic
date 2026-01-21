@@ -1,4 +1,4 @@
-﻿using DotNetAgentic.Services;
+﻿﻿using DotNetAgentic.Services;
 using NUnit.Framework;
 
 namespace DotNetAgentic.Tests.Services;
@@ -102,5 +102,54 @@ public class AgentServiceTests
         
         // Assert - Semantic Kernel returns error message for empty input
         Assert.That(result, Does.Contain("input"));
+    }
+    
+    [Test]
+    public void GetAvailableTools_ReturnsRegisteredTools()
+    {
+        // Arrange
+        Environment.SetEnvironmentVariable("OPENAI_API_KEY", "test-key");
+        var service = new AgentService(_toolRegistry);
+        
+        // Act
+        var tools = service.GetAvailableTools();
+        
+        // Assert
+        Assert.That(tools, Is.Not.Null);
+        Assert.That(tools, Is.Not.Empty);
+        Assert.That(tools.Count, Is.GreaterThanOrEqualTo(2));
+        Assert.That(tools.Any(t => t.Name == "calculator"), Is.True);
+        Assert.That(tools.Any(t => t.Name == "web_search"), Is.True);
+    }
+    
+    [Test]
+    public async Task ProcessAsync_WithToolCommand_ExecutesTool()
+    {
+        // Arrange
+        Environment.SetEnvironmentVariable("OPENAI_API_KEY", "test-key");
+        var service = new AgentService(_toolRegistry);
+        var input = "/tool calculator 5+3";
+        
+        // Act
+        var result = await service.ProcessAsync(input);
+        
+        // Assert
+        Assert.That(result, Is.EqualTo("8"));
+    }
+    
+    [Test]
+    public async Task ProcessAsync_WithInvalidToolCommand_ReturnsError()
+    {
+        // Arrange
+        Environment.SetEnvironmentVariable("OPENAI_API_KEY", "test-key");
+        var service = new AgentService(_toolRegistry);
+        var input = "/tool nonexistent test";
+        
+        // Act
+        var result = await service.ProcessAsync(input);
+        
+        // Assert
+        Assert.That(result, Does.Contain("Error"));
+        Assert.That(result, Does.Contain("not found"));
     }
 }
