@@ -16,7 +16,7 @@ public class TavilySearchTool : ITool
         _client = new TavilyClient(new HttpClient());
     }
     
-    public string Name => "web_search";
+    public string Name => "tavily_search";
     public string Description => "Search the web for current information using Tavily AI";
     
     public async Task<string> ExecuteAsync(string query)
