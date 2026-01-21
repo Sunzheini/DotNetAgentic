@@ -71,6 +71,13 @@ public class AgentController : ControllerBase
                 var result = await tool.ExecuteAsync(request.Input);
                 return Ok(new { tool = request.ToolName, result });
             }
+            
+            if (request.ToolName == "web_search")
+            {
+                var tool = new WebSearchTool();
+                var result = await tool.ExecuteAsync(request.Input);
+                return Ok(new { tool = request.ToolName, result });
+            }
         
             return BadRequest(new { error = $"Tool '{request.ToolName}' not found" });
         }
