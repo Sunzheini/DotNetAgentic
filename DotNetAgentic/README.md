@@ -3,7 +3,7 @@ A .Net app to showcase AI agentic development.
 
 
 ## Status
-Continue with step8
+Continue
 
 
 ## Structure
