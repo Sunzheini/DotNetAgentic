@@ -1,4 +1,5 @@
-﻿using DotNetAgentic.Services;
+﻿using DotNetAgentic.Agents;
+using DotNetAgentic.Services;
 using DotNetAgentic.Tools;
 using DotNetEnv;
 
@@ -24,14 +25,21 @@ builder.Services.AddEndpointsApiExplorer();
 // 5. Generate Swagger JSON from controllers
 builder.Services.AddSwaggerGen();
 
-// 6. Register AgentService and MemoryStore
-builder.Services.AddSingleton<IMemoryStore, InMemoryStore>();
+// 6. Register AgentService
 builder.Services.AddScoped<IAgentService, AgentService>();
 
-// 7. Register tool system
+// 7. Register MemoryStore
+builder.Services.AddSingleton<IMemoryStore, InMemoryStore>();
+
+// 8. Register multi-agent services
+builder.Services.AddSingleton<PlanningAgent>();
+builder.Services.AddSingleton<ExecutionAgent>();
+builder.Services.AddSingleton<AgentOrchestrator>();
+
+// 9. Register tool system
 builder.Services.AddSingleton<ToolRegistry>();
 
-// 8. Register all tools
+// 10. Register all tools
 builder.Services.AddSingleton<ITool, CalculatorTool>();
 builder.Services.AddSingleton<ITool, WebSearchTool>();
 
@@ -41,27 +49,27 @@ if (!string.IsNullOrEmpty(tavilyApiKey))
     builder.Services.AddSingleton<ITool>(new TavilySearchTool(tavilyApiKey));
 }
 
-// 9. BUILD the application from configured services
+// 11. BUILD the application from configured services
 var app = builder.Build();
 
-// 10. Only in development: Show Swagger docs
+// 12. Only in development: Show Swagger docs
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();      // Makes /swagger/v1/swagger.json available
     app.UseSwaggerUI();    // Shows UI at /swagger
 }
 
-// 11. Redirect HTTP → HTTPS (security)
+// 13. Redirect HTTP → HTTPS (security)
 app.UseHttpsRedirection();
 
-// 12. Enable authorization (for protected endpoints)
+// 14. Enable authorization (for protected endpoints)
 app.UseAuthorization();
 
-// 13. Map your controller routes (AgentController, etc.)
+// 15. Map your controller routes (AgentController, etc.)
 app.MapControllers();
 
-// 14. Add a simple root endpoint
+// 16. Add a simple root endpoint
 app.MapGet("/", () => "AI Agentic API - Go to /swagger for documentation");
 
-// 15. Run the app (starts listening for requests)
+// 17. Run the app (starts listening for requests)
 app.Run();

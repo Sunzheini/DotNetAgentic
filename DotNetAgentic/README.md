@@ -63,6 +63,11 @@ dotnet restore
    "input": "1+3"
 }
 
+Test the orchestration with:
+{
+"task": "Research AI agents and calculate how many companies use them"
+}
+
 
 
 

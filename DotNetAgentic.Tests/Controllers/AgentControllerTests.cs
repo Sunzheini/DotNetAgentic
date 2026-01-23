@@ -1,4 +1,5 @@
-﻿﻿﻿﻿using DotNetAgentic.Controllers;
+﻿﻿﻿﻿﻿using DotNetAgentic.Agents;
+using DotNetAgentic.Controllers;
 using DotNetAgentic.Models;
 using DotNetAgentic.Services;
 using DotNetAgentic.Tools;
@@ -13,6 +14,7 @@ public class AgentControllerTests
 {
     private Mock<IAgentService> _mockAgentService = null!;
     private Mock<IMemoryStore> _mockMemoryStore = null!;
+    private Mock<AgentOrchestrator> _mockAgentOrchestrator = null!;
     private ToolRegistry _toolRegistry = null!;
     private AgentController _controller = null!;
     private string? _originalTavilyApiKey;
@@ -24,10 +26,45 @@ public class AgentControllerTests
         _originalTavilyApiKey = Environment.GetEnvironmentVariable("TAVILY_API_KEY");
         Environment.SetEnvironmentVariable("TAVILY_API_KEY", null);
         
+        // Set temporary OPENAI_API_KEY for PlanningAgent initialization
+        var originalOpenAiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        if (string.IsNullOrEmpty(originalOpenAiKey))
+        {
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", "test-key-for-mock");
+        }
+        
         _mockAgentService = new Mock<IAgentService>();
         _mockMemoryStore = new Mock<IMemoryStore>();
         _toolRegistry = new ToolRegistry();
-        _controller = new AgentController(_mockAgentService.Object, _toolRegistry, _mockMemoryStore.Object);
+        
+        // Mock AgentOrchestrator - we just need it to exist for the controller
+        // The tests don't actually test orchestration functionality
+        try
+        {
+            _mockAgentOrchestrator = new Mock<AgentOrchestrator>(
+                new PlanningAgent(), 
+                new ExecutionAgent(_toolRegistry));
+        }
+        catch
+        {
+            // If mocking fails, create a mock without calling the base constructor
+            _mockAgentOrchestrator = new Mock<AgentOrchestrator>(
+                MockBehavior.Loose,
+                Mock.Of<PlanningAgent>(), 
+                new ExecutionAgent(_toolRegistry));
+        }
+        
+        // Restore original key if it was empty
+        if (string.IsNullOrEmpty(originalOpenAiKey))
+        {
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", originalOpenAiKey);
+        }
+        
+        _controller = new AgentController(
+            _mockAgentService.Object, 
+            _toolRegistry, 
+            _mockMemoryStore.Object,
+            _mockAgentOrchestrator.Object);
     }
     
     [TearDown]

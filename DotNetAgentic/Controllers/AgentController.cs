@@ -1,4 +1,5 @@
-﻿using DotNetAgentic.Models;
+﻿using DotNetAgentic.Agents;
+using DotNetAgentic.Models;
 using DotNetAgentic.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,13 +12,15 @@ public class AgentController : ControllerBase
     private readonly IAgentService _agentService;
     private readonly ToolRegistry _toolRegistry;
     private readonly IMemoryStore _memoryStore;
+    private readonly AgentOrchestrator _agentOrchestrator;
     
     // ReSharper disable once ConvertToPrimaryConstructor
-    public AgentController(IAgentService agentService, ToolRegistry toolRegistry, IMemoryStore memoryStore)
+    public AgentController(IAgentService agentService, ToolRegistry toolRegistry, IMemoryStore memoryStore, AgentOrchestrator agentOrchestrator)
     {
         _agentService = agentService;
         _toolRegistry = toolRegistry;
         _memoryStore = memoryStore;
+        _agentOrchestrator = agentOrchestrator;
     }
     
     // --------------------------------------------------------------------------------------
@@ -43,6 +46,22 @@ public class AgentController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
+    
+    [HttpPost("orchestrate")]
+    public async Task<IActionResult> OrchestrateTask([FromBody] OrchestrationRequest request)
+    {
+        try
+        {
+            var result = await _agentOrchestrator.ExecuteComplexTaskAsync(request.Task);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    public record OrchestrationRequest(string Task);
     
     // GET api/agent/health
     [HttpGet("health")]
