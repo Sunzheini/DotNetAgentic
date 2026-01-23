@@ -1,4 +1,5 @@
 ﻿using DotNetAgentic.Agents;
+using DotNetAgentic.Middleware;
 using DotNetAgentic.Services;
 using DotNetAgentic.Tools;
 using DotNetEnv;
@@ -36,10 +37,14 @@ builder.Services.AddSingleton<PlanningAgent>();
 builder.Services.AddSingleton<ExecutionAgent>();
 builder.Services.AddSingleton<AgentOrchestrator>();
 
-// 9. Register tool system
+// 9. Add telemetry services
+builder.Services.AddSingleton<ITelemetryService, TelemetryService>();
+builder.Services.AddSingleton<IMetricsService, MetricsService>();
+
+// 10. Register tool system
 builder.Services.AddSingleton<ToolRegistry>();
 
-// 10. Register all tools
+// 11. Register all tools
 builder.Services.AddSingleton<ITool, CalculatorTool>();
 builder.Services.AddSingleton<ITool, WebSearchTool>();
 
@@ -49,27 +54,30 @@ if (!string.IsNullOrEmpty(tavilyApiKey))
     builder.Services.AddSingleton<ITool>(new TavilySearchTool(tavilyApiKey));
 }
 
-// 11. BUILD the application from configured services
+// 12. BUILD the application from configured services
 var app = builder.Build();
 
-// 12. Only in development: Show Swagger docs
+// Add telemetry middleware (add this early in pipeline)
+app.UseMiddleware<TelemetryMiddleware>();
+
+// 13. Only in development: Show Swagger docs
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();      // Makes /swagger/v1/swagger.json available
     app.UseSwaggerUI();    // Shows UI at /swagger
 }
 
-// 13. Redirect HTTP → HTTPS (security)
+// 14. Redirect HTTP → HTTPS (security)
 app.UseHttpsRedirection();
 
-// 14. Enable authorization (for protected endpoints)
+// 15. Enable authorization (for protected endpoints)
 app.UseAuthorization();
 
-// 15. Map your controller routes (AgentController, etc.)
+// 16. Map your controller routes (AgentController, etc.)
 app.MapControllers();
 
-// 16. Add a simple root endpoint
+// 17. Add a simple root endpoint
 app.MapGet("/", () => "AI Agentic API - Go to /swagger for documentation");
 
-// 17. Run the app (starts listening for requests)
+// 18. Run the app (starts listening for requests)
 app.Run();

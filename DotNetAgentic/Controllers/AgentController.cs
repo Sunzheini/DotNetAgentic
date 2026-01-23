@@ -13,14 +13,20 @@ public class AgentController : ControllerBase
     private readonly ToolRegistry _toolRegistry;
     private readonly IMemoryStore _memoryStore;
     private readonly AgentOrchestrator _agentOrchestrator;
+    private readonly ITelemetryService _telemetryService;
+    private readonly IMetricsService _metricsService;
     
     // ReSharper disable once ConvertToPrimaryConstructor
-    public AgentController(IAgentService agentService, ToolRegistry toolRegistry, IMemoryStore memoryStore, AgentOrchestrator agentOrchestrator)
+    public AgentController(IAgentService agentService, ToolRegistry toolRegistry, 
+        IMemoryStore memoryStore, AgentOrchestrator agentOrchestrator, 
+        ITelemetryService telemetryService, IMetricsService metricsService)
     {
         _agentService = agentService;
         _toolRegistry = toolRegistry;
         _memoryStore = memoryStore;
         _agentOrchestrator = agentOrchestrator;
+        _telemetryService = telemetryService;
+        _metricsService = metricsService;
     }
     
     // --------------------------------------------------------------------------------------
@@ -140,6 +146,36 @@ public class AgentController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
+    }
+    
+    // Add monitoring endpoints
+    [HttpGet("telemetry")]
+    public async Task<IActionResult> GetTelemetry([FromQuery] int count = 50)
+    {
+        var logs = await _telemetryService.GetRecentLogsAsync(count);
+        return Ok(logs);
+    }
+
+    [HttpGet("telemetry/{sessionId}")]
+    public async Task<IActionResult> GetTelemetryBySession(string sessionId)
+    {
+        var logs = await _telemetryService.GetLogsBySessionAsync(sessionId);
+        return Ok(logs);
+    }
+
+    [HttpGet("metrics")]
+    public async Task<IActionResult> GetMetrics()
+    {
+        var metrics = await _metricsService.GetMetricsAsync();
+        return Ok(metrics);
+    }
+
+    [HttpDelete("telemetry")]
+    public async Task<IActionResult> ClearTelemetry()
+    {
+        await _telemetryService.ClearLogsAsync();
+        await _metricsService.ResetMetricsAsync();
+        return Ok(new { message = "Telemetry cleared" });
     }
 
     public record ToolExecutionRequest(string ToolName, string Input);
