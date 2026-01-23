@@ -1,4 +1,4 @@
-﻿﻿using DotNetAgentic.Services;
+﻿﻿﻿using DotNetAgentic.Services;
 using NUnit.Framework;
 
 namespace DotNetAgentic.Tests.Services;
@@ -8,6 +8,7 @@ public class AgentServiceTests
 {
     private string? _originalApiKey;
     private ToolRegistry _toolRegistry = null!;
+    private IMemoryStore _memoryStore = null!;
     
     [SetUp]
     public void Setup()
@@ -17,6 +18,9 @@ public class AgentServiceTests
         
         // Create a tool registry for tests
         _toolRegistry = new ToolRegistry();
+        
+        // Create an in-memory store for tests
+        _memoryStore = new InMemoryStore();
     }
     
     [TearDown]
@@ -41,7 +45,7 @@ public class AgentServiceTests
         
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => 
-            new AgentService(_toolRegistry));
+            new AgentService(_toolRegistry, _memoryStore));
         
         Assert.That(ex!.Message, Does.Contain("OPENAI_API_KEY"));
     }
@@ -53,7 +57,7 @@ public class AgentServiceTests
         Environment.SetEnvironmentVariable("OPENAI_API_KEY", "test-key");
         
         // Act
-        var service = new AgentService(_toolRegistry);
+        var service = new AgentService(_toolRegistry, _memoryStore);
         
         // Assert
         Assert.That(service, Is.Not.Null);
@@ -72,7 +76,7 @@ public class AgentServiceTests
         }
         
         // Arrange
-        var service = new AgentService(_toolRegistry);
+        var service = new AgentService(_toolRegistry, _memoryStore);
         
         // Act
         var result = await service.ProcessAsync("Hello AI");
@@ -95,7 +99,7 @@ public class AgentServiceTests
         }
         
         // Arrange
-        var service = new AgentService(_toolRegistry);
+        var service = new AgentService(_toolRegistry, _memoryStore);
         
         // Act
         var result = service.ProcessAsync("").Result;
@@ -109,7 +113,7 @@ public class AgentServiceTests
     {
         // Arrange
         Environment.SetEnvironmentVariable("OPENAI_API_KEY", "test-key");
-        var service = new AgentService(_toolRegistry);
+        var service = new AgentService(_toolRegistry, _memoryStore);
         
         // Act
         var tools = service.GetAvailableTools();
@@ -127,7 +131,7 @@ public class AgentServiceTests
     {
         // Arrange
         Environment.SetEnvironmentVariable("OPENAI_API_KEY", "test-key");
-        var service = new AgentService(_toolRegistry);
+        var service = new AgentService(_toolRegistry, _memoryStore);
         var input = "/tool calculator 5+3";
         
         // Act
@@ -142,7 +146,7 @@ public class AgentServiceTests
     {
         // Arrange
         Environment.SetEnvironmentVariable("OPENAI_API_KEY", "test-key");
-        var service = new AgentService(_toolRegistry);
+        var service = new AgentService(_toolRegistry, _memoryStore);
         var input = "/tool nonexistent test";
         
         // Act

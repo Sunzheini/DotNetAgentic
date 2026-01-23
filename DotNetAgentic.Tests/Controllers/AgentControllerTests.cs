@@ -1,4 +1,4 @@
-﻿﻿﻿using DotNetAgentic.Controllers;
+﻿﻿﻿﻿using DotNetAgentic.Controllers;
 using DotNetAgentic.Models;
 using DotNetAgentic.Services;
 using DotNetAgentic.Tools;
@@ -12,6 +12,7 @@ namespace DotNetAgentic.Tests.Controllers;
 public class AgentControllerTests
 {
     private Mock<IAgentService> _mockAgentService = null!;
+    private Mock<IMemoryStore> _mockMemoryStore = null!;
     private ToolRegistry _toolRegistry = null!;
     private AgentController _controller = null!;
     private string? _originalTavilyApiKey;
@@ -24,8 +25,9 @@ public class AgentControllerTests
         Environment.SetEnvironmentVariable("TAVILY_API_KEY", null);
         
         _mockAgentService = new Mock<IAgentService>();
+        _mockMemoryStore = new Mock<IMemoryStore>();
         _toolRegistry = new ToolRegistry();
-        _controller = new AgentController(_mockAgentService.Object, _toolRegistry);
+        _controller = new AgentController(_mockAgentService.Object, _toolRegistry, _mockMemoryStore.Object);
     }
     
     [TearDown]
@@ -42,7 +44,7 @@ public class AgentControllerTests
     public async Task Chat_ValidRequest_ReturnsOkWithAgentResponse()
     {
         // Arrange
-        _mockAgentService.Setup(x => x.ProcessAsync("Hello"))
+        _mockAgentService.Setup(x => x.ProcessAsync("Hello", "test-session"))
             .ReturnsAsync("Mocked AI response");
         
         var request = new AgentRequest 
@@ -68,7 +70,7 @@ public class AgentControllerTests
     public async Task Chat_ServiceThrowsException_ReturnsBadRequest()
     {
         // Arrange
-        _mockAgentService.Setup(x => x.ProcessAsync(It.IsAny<string>()))
+        _mockAgentService.Setup(x => x.ProcessAsync(It.IsAny<string>(), It.IsAny<string>()))
             .ThrowsAsync(new Exception("API error"));
         
         var request = new AgentRequest 
@@ -215,7 +217,7 @@ public class AgentControllerTests
     public async Task Chat_WithEmptyMessage_ReturnsBadRequest()
     {
         // Arrange
-        _mockAgentService.Setup(x => x.ProcessAsync(It.IsAny<string>()))
+        _mockAgentService.Setup(x => x.ProcessAsync(It.IsAny<string>(), It.IsAny<string>()))
             .ThrowsAsync(new ArgumentException("Message cannot be empty"));
         
         var request = new AgentRequest 
