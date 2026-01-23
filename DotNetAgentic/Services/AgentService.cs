@@ -10,8 +10,9 @@ public class AgentService : IAgentService
 {
     private readonly Kernel _kernel;
     private readonly ToolRegistry _toolRegistry;
+    private readonly IMemoryStore _memoryStore;
     
-    public AgentService(ToolRegistry toolRegistry)
+    public AgentService(ToolRegistry toolRegistry, IMemoryStore memoryStore)
     {
         var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
         const string openAiModel = "gpt-4.1-mini";
@@ -32,14 +33,18 @@ public class AgentService : IAgentService
         _kernel = kernelBuilder.Build();
         
         _toolRegistry = toolRegistry;
+        _memoryStore = memoryStore;
     }
     
-    public async Task<string> ProcessAsync(string input)
+    public async Task<string> ProcessAsync(string input, string sessionId = "default")
     {
         if (string.IsNullOrWhiteSpace(input))
         {
             return "Error: Input cannot be empty";
         }
+        
+        // Get conversation history from memory
+        var history = await _memoryStore.GetSessionSummaryAsync(sessionId);
         
         // Check if input is a tool command
         if (input.StartsWith("/tool "))
@@ -47,15 +52,31 @@ public class AgentService : IAgentService
             var parts = input[6..].Split(' ', 2);
             if (parts.Length == 2)
             {
-                return await _toolRegistry.ExecuteToolAsync(parts[0], parts[1]);
+                var toolResult = await _toolRegistry.ExecuteToolAsync(parts[0], parts[1]);
+                
+                // Save tool interaction to memory
+                await _memoryStore.SaveAsync(new Models.MemoryRecord
+                {
+                    SessionId = sessionId,
+                    UserMessage = input,
+                    AgentResponse = toolResult,
+                    ToolCalls = new List<Models.ToolCall>
+                    {
+                        new() { ToolName = parts[0], Input = parts[1], Output = toolResult }
+                    }
+                });
+                
+                return toolResult;
             }
         }
         
-        // Enhanced prompt with tool awareness
+        // Enhanced prompt with tool awareness AND conversation history
         var toolsDescription = _toolRegistry.GetToolsDescription();
         var prompt = $"""
                       You are an AI assistant with access to these tools:
                       {toolsDescription}
+
+                      {history}
 
                       User: {input}
 
@@ -64,7 +85,18 @@ public class AgentService : IAgentService
                       """;
         
         var result = await _kernel.InvokePromptAsync(prompt);
-        return ParseToolResponse(result.ToString());
+        var response = ParseToolResponse(result.ToString());
+        
+        // Save conversation to memory
+        await _memoryStore.SaveAsync(new Models.MemoryRecord
+        {
+            SessionId = sessionId,
+            UserMessage = input,
+            AgentResponse = response,
+            ToolCalls = new List<Models.ToolCall>()
+        });
+        
+        return response;
     }
     
     private string ParseToolResponse(string response)
@@ -79,6 +111,12 @@ public class AgentService : IAgentService
             }
         }
         return response;
+    }
+    
+    public async Task<string> ProcessWithMemoryAsync(string input, string sessionId)
+    {
+        // This method is now the same as ProcessAsync since we integrated memory there
+        return await ProcessAsync(input, sessionId);
     }
     
     public List<ITool> GetAvailableTools() => _toolRegistry.GetAllTools();

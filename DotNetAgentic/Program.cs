@@ -24,7 +24,8 @@ builder.Services.AddEndpointsApiExplorer();
 // 5. Generate Swagger JSON from controllers
 builder.Services.AddSwaggerGen();
 
-// 6. Register AgentService
+// 6. Register AgentService and MemoryStore
+builder.Services.AddSingleton<IMemoryStore, InMemoryStore>();
 builder.Services.AddScoped<IAgentService, AgentService>();
 
 // 7. Register tool system

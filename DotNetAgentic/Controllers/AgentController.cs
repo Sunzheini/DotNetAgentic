@@ -1,6 +1,5 @@
 ﻿using DotNetAgentic.Models;
 using DotNetAgentic.Services;
-using DotNetAgentic.Tools;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DotNetAgentic.Controllers;
@@ -11,12 +10,14 @@ public class AgentController : ControllerBase
 {
     private readonly IAgentService _agentService;
     private readonly ToolRegistry _toolRegistry;
+    private readonly IMemoryStore _memoryStore;
     
     // ReSharper disable once ConvertToPrimaryConstructor
-    public AgentController(IAgentService agentService, ToolRegistry toolRegistry)
+    public AgentController(IAgentService agentService, ToolRegistry toolRegistry, IMemoryStore memoryStore)
     {
         _agentService = agentService;
         _toolRegistry = toolRegistry;
+        _memoryStore = memoryStore;
     }
     
     // --------------------------------------------------------------------------------------
@@ -26,13 +27,15 @@ public class AgentController : ControllerBase
     {
         try
         {
-            var response = await _agentService.ProcessAsync(request.Message);
+            // Use provided sessionId or default to "default"
+            var sessionId = request.SessionId ?? "default";
+            var response = await _agentService.ProcessAsync(request.Message, sessionId);
             
             return Ok(new AgentResponse
             {
                 Content = response,
                 ToolCalls = new List<ToolCall>(),  // Empty for now
-                Reasoning = "Processed by Semantic Kernel agent"
+                Reasoning = $"Processed by Semantic Kernel agent (Session: {sessionId})"
             });
         }
         catch (Exception ex)
@@ -68,6 +71,51 @@ public class AgentController : ControllerBase
         {
             var result = await _toolRegistry.ExecuteToolAsync(request.ToolName, request.Input);
             return Ok(new { tool = request.ToolName, result });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    // GET api/agent/memory/{sessionId}
+    [HttpGet("memory/{sessionId}")]
+    public async Task<IActionResult> GetSessionHistory(string sessionId, [FromQuery] int maxRecords = 10)
+    {
+        try
+        {
+            var history = await _memoryStore.GetSessionHistoryAsync(sessionId, maxRecords);
+            return Ok(new { sessionId, recordCount = history.Count, history });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    // GET api/agent/memory/{sessionId}/summary
+    [HttpGet("memory/{sessionId}/summary")]
+    public async Task<IActionResult> GetSessionSummary(string sessionId)
+    {
+        try
+        {
+            var summary = await _memoryStore.GetSessionSummaryAsync(sessionId);
+            return Ok(new { sessionId, summary });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    // DELETE api/agent/memory/{sessionId}
+    [HttpDelete("memory/{sessionId}")]
+    public async Task<IActionResult> ClearSession(string sessionId)
+    {
+        try
+        {
+            await _memoryStore.ClearSessionAsync(sessionId);
+            return Ok(new { message = $"Session '{sessionId}' cleared successfully" });
         }
         catch (Exception ex)
         {
