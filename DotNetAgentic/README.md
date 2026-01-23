@@ -39,6 +39,9 @@ HTTP Request File - For testing APIs
 2. Create a ASP.NET Core Web API project, .NET 8.0
 3. Use the .gitignore here to replace the GitHub one
 4. Install Microsoft.SemanticKernel, DotNetEnv, Tavily via NuGet
+   dotnet add package Qdrant.Client
+   dotnet add package Microsoft.SemanticKernel.Connectors.Qdrant
+   dotnet add package Microsoft.SemanticKernel.Connectors.OpenAI
 5. Create a .env file in the project root
 6. Use the .env like it is shown in Program.cs and AgentService.cs
 7. Create test project:

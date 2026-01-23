@@ -1,4 +1,4 @@
-﻿namespace DotNetAgentic.Agents;
+﻿﻿namespace DotNetAgentic.Agents;
 
 /// <summary>
 /// Orchestrates multiple agents to work together.
@@ -14,7 +14,7 @@ public class AgentOrchestrator
         _executionAgent = executionAgent;
     }
     
-    public async Task<OrchestrationResult> ExecuteComplexTaskAsync(string task)
+    public virtual async Task<OrchestrationResult> ExecuteComplexTaskAsync(string task)
     {
         var result = new OrchestrationResult
         {

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿using DotNetAgentic.Agents;
+﻿﻿﻿﻿﻿﻿using DotNetAgentic.Agents;
 using DotNetAgentic.Controllers;
 using DotNetAgentic.Models;
 using DotNetAgentic.Services;
@@ -15,6 +15,8 @@ public class AgentControllerTests
     private Mock<IAgentService> _mockAgentService = null!;
     private Mock<IMemoryStore> _mockMemoryStore = null!;
     private Mock<AgentOrchestrator> _mockAgentOrchestrator = null!;
+    private Mock<ITelemetryService> _mockTelemetryService = null!;
+    private Mock<IMetricsService> _mockMetricsService = null!;
     private ToolRegistry _toolRegistry = null!;
     private AgentController _controller = null!;
     private string? _originalTavilyApiKey;
@@ -35,6 +37,8 @@ public class AgentControllerTests
         
         _mockAgentService = new Mock<IAgentService>();
         _mockMemoryStore = new Mock<IMemoryStore>();
+        _mockTelemetryService = new Mock<ITelemetryService>();
+        _mockMetricsService = new Mock<IMetricsService>();
         _toolRegistry = new ToolRegistry();
         
         // Mock AgentOrchestrator - we just need it to exist for the controller
@@ -64,7 +68,9 @@ public class AgentControllerTests
             _mockAgentService.Object, 
             _toolRegistry, 
             _mockMemoryStore.Object,
-            _mockAgentOrchestrator.Object);
+            _mockAgentOrchestrator.Object,
+            _mockTelemetryService.Object,
+            _mockMetricsService.Object);
     }
     
     [TearDown]
@@ -269,4 +275,190 @@ public class AgentControllerTests
         // Assert
         Assert.That(result.Result, Is.InstanceOf<BadRequestObjectResult>());
     }
+    
+    // ==================== TELEMETRY TESTS ====================
+    
+    [Test]
+    public async Task GetTelemetry_ReturnsRecentLogs()
+    {
+        // Arrange
+        var mockLogs = new List<TelemetryRecord>
+        {
+            new() { Endpoint = "/api/agent/chat", SessionId = "session1", Operation = "chat" },
+            new() { Endpoint = "/api/agent/tool", SessionId = "session2", Operation = "tool" }
+        };
+        
+        _mockTelemetryService.Setup(x => x.GetRecentLogsAsync(50))
+            .ReturnsAsync(mockLogs);
+        
+        // Act
+        var result = await _controller.GetTelemetry(50);
+        
+        // Assert
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+        var okResult = (OkObjectResult)result;
+        var logs = okResult.Value as List<TelemetryRecord>;
+        
+        Assert.That(logs, Is.Not.Null);
+        Assert.That(logs!.Count, Is.EqualTo(2));
+        Assert.That(logs[0].Endpoint, Is.EqualTo("/api/agent/chat"));
+    }
+    
+    [Test]
+    public async Task GetTelemetry_WithCustomCount_ReturnsSpecifiedNumber()
+    {
+        // Arrange
+        var mockLogs = new List<TelemetryRecord>
+        {
+            new() { Endpoint = "/api/agent/chat", SessionId = "session1", Operation = "chat" }
+        };
+        
+        _mockTelemetryService.Setup(x => x.GetRecentLogsAsync(10))
+            .ReturnsAsync(mockLogs);
+        
+        // Act
+        var result = await _controller.GetTelemetry(10);
+        
+        // Assert
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+        _mockTelemetryService.Verify(x => x.GetRecentLogsAsync(10), Times.Once);
+    }
+    
+    [Test]
+    public async Task GetTelemetryBySession_ReturnsSessionLogs()
+    {
+        // Arrange
+        var sessionId = "test-session-123";
+        var mockLogs = new List<TelemetryRecord>
+        {
+            new() { Endpoint = "/api/agent/chat", SessionId = sessionId, Operation = "chat" },
+            new() { Endpoint = "/api/agent/chat", SessionId = sessionId, Operation = "chat" }
+        };
+        
+        _mockTelemetryService.Setup(x => x.GetLogsBySessionAsync(sessionId))
+            .ReturnsAsync(mockLogs);
+        
+        // Act
+        var result = await _controller.GetTelemetryBySession(sessionId);
+        
+        // Assert
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+        var okResult = (OkObjectResult)result;
+        var logs = okResult.Value as List<TelemetryRecord>;
+        
+        Assert.That(logs, Is.Not.Null);
+        Assert.That(logs!.Count, Is.EqualTo(2));
+        Assert.That(logs.All(l => l.SessionId == sessionId), Is.True);
+    }
+    
+    [Test]
+    public async Task GetMetrics_ReturnsAgentMetrics()
+    {
+        // Arrange
+        var mockMetrics = new AgentMetrics
+        {
+            TotalRequests = 100,
+            SuccessfulRequests = 95,
+            FailedRequests = 5,
+            AverageResponseTimeMs = 250,
+            ToolUsage = new Dictionary<string, int> { { "calculator", 30 }, { "web_search", 20 } },
+            EndpointUsage = new Dictionary<string, int> { { "/api/agent/chat", 80 }, { "/api/agent/tool", 20 } }
+        };
+        
+        _mockMetricsService.Setup(x => x.GetMetricsAsync())
+            .ReturnsAsync(mockMetrics);
+        
+        // Act
+        var result = await _controller.GetMetrics();
+        
+        // Assert
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+        var okResult = (OkObjectResult)result;
+        var metrics = okResult.Value as AgentMetrics;
+        
+        Assert.That(metrics, Is.Not.Null);
+        Assert.That(metrics!.TotalRequests, Is.EqualTo(100));
+        Assert.That(metrics.SuccessfulRequests, Is.EqualTo(95));
+        Assert.That(metrics.FailedRequests, Is.EqualTo(5));
+        Assert.That(metrics.AverageResponseTimeMs, Is.EqualTo(250));
+        Assert.That(metrics.ToolUsage.Count, Is.EqualTo(2));
+        Assert.That(metrics.EndpointUsage.Count, Is.EqualTo(2));
+    }
+    
+    [Test]
+    public async Task ClearTelemetry_ClearsBothLogsAndMetrics()
+    {
+        // Arrange
+        _mockTelemetryService.Setup(x => x.ClearLogsAsync())
+            .Returns(Task.CompletedTask);
+        
+        _mockMetricsService.Setup(x => x.ResetMetricsAsync())
+            .Returns(Task.CompletedTask);
+        
+        // Act
+        var result = await _controller.ClearTelemetry();
+        
+        // Assert
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+        
+        var okResult = (OkObjectResult)result;
+        Assert.That(okResult.Value, Is.Not.Null);
+        
+        // Verify both services were called
+        _mockTelemetryService.Verify(x => x.ClearLogsAsync(), Times.Once);
+        _mockMetricsService.Verify(x => x.ResetMetricsAsync(), Times.Once);
+    }
+    
+    [Test]
+    public async Task OrchestrateTask_WithValidRequest_ReturnsOrchestrationResult()
+    {
+        // Arrange
+        var task = "Calculate 5+3 and search for weather";
+        var orchestrationResult = new OrchestrationResult
+        {
+            OriginalTask = task,
+            Plan = "Step 1: Calculate 5+3\nStep 2: Search for weather",
+            Steps = new List<ExecutionStep>
+            {
+                new() { Description = "Calculate 5+3", Result = "8", Timestamp = DateTime.UtcNow }
+            },
+            Summary = "Task completed successfully",
+            CompletedAt = DateTime.UtcNow
+        };
+        
+        _mockAgentOrchestrator.Setup(x => x.ExecuteComplexTaskAsync(task))
+            .ReturnsAsync(orchestrationResult);
+        
+        var request = new AgentController.OrchestrationRequest(task);
+        
+        // Act
+        var result = await _controller.OrchestrateTask(request);
+        
+        // Assert
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+        var okResult = (OkObjectResult)result;
+        var resultValue = okResult.Value as OrchestrationResult;
+        
+        Assert.That(resultValue, Is.Not.Null);
+        Assert.That(resultValue!.OriginalTask, Is.EqualTo(task));
+        Assert.That(resultValue.Steps.Count, Is.EqualTo(1));
+    }
+    
+    [Test]
+    public async Task OrchestrateTask_WhenOrchestratorThrows_ReturnsBadRequest()
+    {
+        // Arrange
+        var task = "Invalid task";
+        _mockAgentOrchestrator.Setup(x => x.ExecuteComplexTaskAsync(task))
+            .ThrowsAsync(new Exception("Orchestration failed"));
+        
+        var request = new AgentController.OrchestrationRequest(task);
+        
+        // Act
+        var result = await _controller.OrchestrateTask(request);
+        
+        // Assert
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
+    }
 }
+
