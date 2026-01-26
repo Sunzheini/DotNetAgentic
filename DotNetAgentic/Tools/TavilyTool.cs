@@ -8,18 +8,30 @@ namespace DotNetAgentic.Tools;
 /// </summary>
 public class TavilySearchTool : ITool
 {
+    /// <summary>
+    /// The Tavily client used to perform searches.
+    /// </summary>
     private readonly TavilyClient _client;
+    
+    /// <summary>
+    /// The API key for authenticating with the Tavily service.
+    /// </summary>
     private readonly string _apiKey;
     
+    // ReSharper disable once ConvertToPrimaryConstructor
     public TavilySearchTool(string apiKey)
     {
         _apiKey = apiKey;
         _client = new TavilyClient(new HttpClient());
     }
-    
+
+    /// <inheritdoc />
     public string Name => "tavily_search";
+    
+    /// <inheritdoc />
     public string Description => "Search the web for current information using Tavily AI";
     
+    /// <inheritdoc />
     public async Task<string> ExecuteAsync(string query)
     {
         try
@@ -59,7 +71,7 @@ public class TavilySearchTool : ITool
                     }
                     
                     formatted.Add($"   📎 Source: {result.Url}");
-                    formatted.Add(""); // Empty line between results
+                    formatted.Add("");
                 }
             }
             else

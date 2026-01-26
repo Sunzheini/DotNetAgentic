@@ -7,9 +7,13 @@ namespace DotNetAgentic.Tools;
 /// </summary>
 public class WebSearchTool : ITool
 {
+    /// <inheritdoc />
     public string Name => "web_search";
+    
+    /// <inheritdoc />
     public string Description => "Searches the web for information";
     
+    /// <inheritdoc />
     public async Task<string> ExecuteAsync(string input)
     {
         // Mock implementation for showcase
