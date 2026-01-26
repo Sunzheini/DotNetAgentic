@@ -3,11 +3,13 @@
 /// <summary>
 /// Orchestrates multiple agents to work together.
 /// </summary>
+// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
 public class AgentOrchestrator
 {
     private readonly PlanningAgent _planningAgent;
     private readonly ExecutionAgent _executionAgent;
     
+    // ReSharper disable once ConvertToPrimaryConstructor
     public AgentOrchestrator(PlanningAgent planningAgent, ExecutionAgent executionAgent)
     {
         _planningAgent = planningAgent;

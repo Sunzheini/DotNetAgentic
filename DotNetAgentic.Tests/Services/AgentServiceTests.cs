@@ -1,5 +1,6 @@
 ﻿﻿﻿using DotNetAgentic.Services;
-using NUnit.Framework;
+  using DotNetAgentic.Services.Interfaces;
+  using NUnit.Framework;
 
 namespace DotNetAgentic.Tests.Services;
 

@@ -2,6 +2,7 @@
 using DotNetAgentic.Controllers;
 using DotNetAgentic.Models;
 using DotNetAgentic.Services;
+using DotNetAgentic.Services.Interfaces;
 using DotNetAgentic.Tools;
 using DotNetAgentic.Tools.Interfaces;
 using Microsoft.AspNetCore.Mvc;

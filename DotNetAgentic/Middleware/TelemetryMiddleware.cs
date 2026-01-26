@@ -1,13 +1,29 @@
 ﻿using DotNetAgentic.Services;
+using DotNetAgentic.Services.Interfaces;
 
 namespace DotNetAgentic.Middleware;
 
+/// <summary>
+/// ASP.NET Core middleware for logging telemetry and metrics for each HTTP request.
+/// </summary>
 public class TelemetryMiddleware
 {
+    /// <summary>
+    /// The next middleware in the pipeline.
+    /// </summary>
     private readonly RequestDelegate _next;
+    
+    /// <summary>
+    /// Telemetry service for logging requests.
+    /// </summary>
     private readonly ITelemetryService _telemetryService;
+    
+    /// <summary>
+    /// The metrics service for recording request metrics.
+    /// </summary>
     private readonly IMetricsService _metricsService;
     
+    // ReSharper disable once ConvertToPrimaryConstructor
     public TelemetryMiddleware(RequestDelegate next, ITelemetryService telemetryService, 
         IMetricsService metricsService)
     {
@@ -16,6 +32,12 @@ public class TelemetryMiddleware
         _metricsService = metricsService;
     }
     
+    /// <summary>
+    /// Invoke the middleware to log telemetry and metrics for the HTTP request.
+    /// </summary>
+    /// <param name="context">
+    /// The HTTP context of the current request.
+    /// </param>
     public async Task InvokeAsync(HttpContext context)
     {
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -83,6 +105,15 @@ public class TelemetryMiddleware
         }
     }
     
+    /// <summary>
+    /// Reads the body of the HTTP request as a string.
+    /// </summary>
+    /// <param name="request">
+    /// The HTTP request to read the body from.
+    /// </param>
+    /// <returns>
+    /// Returns the request body as a string.
+    /// </returns>
     private async Task<string> ReadRequestBodyAsync(HttpRequest request)
     {
         if (!request.Body.CanRead || request.ContentLength == 0)
@@ -96,6 +127,15 @@ public class TelemetryMiddleware
         return body;
     }
     
+    /// <summary>
+    /// Reads the body of the HTTP response from a MemoryStream as a string.
+    /// </summary>
+    /// <param name="responseBody">
+    /// Response body stream to read from.
+    /// </param>
+    /// <returns>
+    /// Returns the response body as a string.
+    /// </returns>
     private async Task<string> ReadResponseBodyAsync(MemoryStream responseBody)
     {
         responseBody.Position = 0;
@@ -106,6 +146,15 @@ public class TelemetryMiddleware
         return body;
     }
     
+    /// <summary>
+    /// Extracts the tool name from the request body if present.
+    /// </summary>
+    /// <param name="requestBody">
+    /// Request body to extract tool name from.
+    /// </param>
+    /// <returns>
+    /// The extracted tool name, or an empty string if not found.
+    /// </returns>
     private string ExtractToolName(string requestBody)
     {
         if (string.IsNullOrEmpty(requestBody) || !requestBody.Contains("toolName"))

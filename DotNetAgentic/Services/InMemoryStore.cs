@@ -1,4 +1,5 @@
 ﻿using DotNetAgentic.Models;
+using DotNetAgentic.Services.Interfaces;
 
 namespace DotNetAgentic.Services;
 

@@ -1,28 +1,6 @@
-﻿namespace DotNetAgentic.Services;
+﻿using DotNetAgentic.Services.Interfaces;
 
-public class TelemetryRecord
-{
-    public string Id { get; set; } = Guid.NewGuid().ToString();
-    public string Endpoint { get; set; } = string.Empty;
-    public string SessionId { get; set; } = string.Empty;
-    public string Operation { get; set; } = string.Empty;
-    public string Input { get; set; } = string.Empty;
-    public string Output { get; set; } = string.Empty;
-    public long DurationMs { get; set; }
-    public string? Error { get; set; }
-    public Dictionary<string, object> Metadata { get; set; } = new();
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
-}
-
-public interface ITelemetryService
-{
-    Task LogRequestAsync(string endpoint, string sessionId, string operation, string input, 
-        string output, long durationMs, string? error = null, Dictionary<string, object>? metadata = null);
-    
-    Task<List<TelemetryRecord>> GetRecentLogsAsync(int count = 50);
-    Task<List<TelemetryRecord>> GetLogsBySessionAsync(string sessionId);
-    Task ClearLogsAsync();
-}
+namespace DotNetAgentic.Services;
 
 public class TelemetryService : ITelemetryService
 {

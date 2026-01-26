@@ -1,6 +1,7 @@
 ﻿using DotNetAgentic.Agents;
 using DotNetAgentic.Middleware;
 using DotNetAgentic.Services;
+using DotNetAgentic.Services.Interfaces;
 using DotNetAgentic.Tools;
 using DotNetAgentic.Tools.Interfaces;
 using DotNetEnv;

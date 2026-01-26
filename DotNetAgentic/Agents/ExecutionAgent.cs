@@ -7,6 +7,9 @@ namespace DotNetAgentic.Agents;
 /// </summary>
 public class ExecutionAgent
 {
+    /// <summary>
+    /// The tool registry for accessing available tools.
+    /// </summary>
     private readonly ToolRegistry _toolRegistry;
     
     public ExecutionAgent(ToolRegistry toolRegistry)
@@ -14,6 +17,15 @@ public class ExecutionAgent
         _toolRegistry = toolRegistry;
     }
     
+    /// <summary>
+    /// Executes a single step, utilizing tools as needed.
+    /// </summary>
+    /// <param name="step">
+    /// The step description to execute.
+    /// </param>
+    /// <returns>
+    /// Results of the step execution.
+    /// </returns>
     public async Task<string> ExecuteStepAsync(string step)
     {
         // Check if step requires a tool
@@ -40,6 +52,15 @@ public class ExecutionAgent
         return $"Executed: {step}";
     }
     
+    /// <summary>
+    /// Extracts calculation expression from the step text.
+    /// </summary>
+    /// <param name="text">
+    /// The step text.
+    /// </param>
+    /// <returns>
+    /// Returns the extracted calculation expression.
+    /// </returns>
     private string ExtractCalculation(string text)
     {
         // Simple extraction - in real app use better NLP
@@ -51,6 +72,15 @@ public class ExecutionAgent
         return "";
     }
     
+    /// <summary>
+    /// Extracts search query from the step text.
+    /// </summary>
+    /// <param name="text">
+    /// The step text.
+    /// </param>
+    /// <returns>
+    /// Returns the extracted search query.
+    /// </returns>
     private string ExtractSearchQuery(string text)
     {
         if (text.Contains("search for") && text.Length > 11)

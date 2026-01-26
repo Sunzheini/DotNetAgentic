@@ -7,6 +7,9 @@ namespace DotNetAgentic.Agents;
 /// </summary>
 public class PlanningAgent
 {
+    /// <summary>
+    /// The Semantic Kernel instance for AI interactions.
+    /// </summary>
     private readonly Kernel _kernel;
     
     public PlanningAgent()
@@ -26,6 +29,15 @@ public class PlanningAgent
         _kernel = kernelBuilder.Build();
     }
     
+    /// <summary>
+    /// Creates a step-by-step plan for the given goal.
+    /// </summary>
+    /// <param name="goal">
+    /// The overall goal to be achieved.
+    /// </param>
+    /// <returns>
+    /// Returns the generated plan as a string.
+    /// </returns>
     public async Task<string> CreatePlanAsync(string goal)
     {
         var prompt = $"""

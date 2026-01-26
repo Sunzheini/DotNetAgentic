@@ -1,4 +1,5 @@
-﻿using DotNetAgentic.Tools;
+﻿using DotNetAgentic.Services.Interfaces;
+using DotNetAgentic.Tools;
 using DotNetAgentic.Tools.Interfaces;
 using Microsoft.SemanticKernel;
 

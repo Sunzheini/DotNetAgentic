@@ -1,6 +1,6 @@
 ﻿using DotNetAgentic.Tools.Interfaces;
 
-namespace DotNetAgentic.Services;
+namespace DotNetAgentic.Services.Interfaces;
 
 /// <summary>
 /// Interface for AI agent service that processes user input.
@@ -10,7 +10,12 @@ public interface IAgentService
     /// <summary>
     /// Processes user input and returns AI-generated response.
     /// </summary>
-    /// <param name="input">The user's input message</param>
+    /// <param name="input">
+    /// The user's input message
+    /// </param>
+    /// <param name="sessionId">
+    /// The session identifier for maintaining context (default is "default")
+    /// </param>
     /// <returns>AI-generated response text</returns>
     Task<string> ProcessAsync(string input, string sessionId = "default");
     

@@ -1,19 +1,47 @@
 ﻿using DotNetAgentic.Agents;
 using DotNetAgentic.Models;
 using DotNetAgentic.Services;
+using DotNetAgentic.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DotNetAgentic.Controllers;
 
+/// <summary>
+/// The AgentController handles API requests related to the AI agent functionalities,
+/// including chat interactions, tool executions, session memory management, and monitoring.
+/// </summary>
 [ApiController]                     // MARK this class as an API controller (enables auto features)
 [Route("api/[controller]")]  // Maps to /api/agent
 public class AgentController : ControllerBase
 {
+    /// <summary>
+    /// The agent service for processing messages and managing tools.
+    /// </summary>
     private readonly IAgentService _agentService;
+    
+    /// <summary>
+    /// The tool registry for managing and executing tools.
+    /// </summary>
     private readonly ToolRegistry _toolRegistry;
+    
+    /// <summary>
+    /// The memory store for session history and summaries.
+    /// </summary>
     private readonly IMemoryStore _memoryStore;
+    
+    /// <summary>
+    /// The agent orchestrator for handling complex task orchestration.
+    /// </summary>
     private readonly AgentOrchestrator _agentOrchestrator;
+    
+    /// <summary>
+    /// The telemetry service for logging and monitoring.
+    /// </summary>
     private readonly ITelemetryService _telemetryService;
+    
+    /// <summary>
+    /// The metrics service for collecting performance metrics.
+    /// </summary>
     private readonly IMetricsService _metricsService;
     
     // ReSharper disable once ConvertToPrimaryConstructor
@@ -29,9 +57,10 @@ public class AgentController : ControllerBase
         _metricsService = metricsService;
     }
     
-    // --------------------------------------------------------------------------------------
-    // POST api/agent/chat
-    [HttpPost("chat")]
+    public record ToolExecutionRequest(string ToolName, string Input);
+    
+    #region API Endpoints
+    [HttpPost("chat")]      // POST api/agent/chat
     public async Task<ActionResult<AgentResponse>> Chat([FromBody] AgentRequest request)
     {
         try
@@ -177,6 +206,5 @@ public class AgentController : ControllerBase
         await _metricsService.ResetMetricsAsync();
         return Ok(new { message = "Telemetry cleared" });
     }
-
-    public record ToolExecutionRequest(string ToolName, string Input);
+    #endregion
 }

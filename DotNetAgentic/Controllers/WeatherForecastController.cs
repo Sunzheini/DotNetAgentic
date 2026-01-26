@@ -3,6 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DotNetAgentic.Controllers
 {
+    /// <summary>
+    /// A simple Weather Forecast API controller
+    /// </summary>
+    /// <param name="logger">
+    /// The logger instance for logging information
+    /// </param>
     [ApiController]     // MARK this class as an API controller (enables auto features)
     [Route("[controller]")]     // Route: maps to /WeatherForecast (URL path)
     public class WeatherForecastController(ILogger<WeatherForecastController> logger) : ControllerBase
