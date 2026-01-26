@@ -1,4 +1,5 @@
 ﻿using DotNetAgentic.Tools;
+using DotNetAgentic.Tools.Interfaces;
 
 namespace DotNetAgentic.Services;
 

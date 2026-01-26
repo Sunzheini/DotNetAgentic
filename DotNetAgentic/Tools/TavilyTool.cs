@@ -1,4 +1,5 @@
-﻿using Tavily;
+﻿using DotNetAgentic.Tools.Interfaces;
+using Tavily;
 
 namespace DotNetAgentic.Tools;
 

@@ -1,4 +1,6 @@
-﻿namespace DotNetAgentic.Tools;
+﻿using DotNetAgentic.Tools.Interfaces;
+
+namespace DotNetAgentic.Tools;
 
 /// <summary>
 /// Tool that performs web searches to retrieve information.

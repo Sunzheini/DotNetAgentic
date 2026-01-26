@@ -1,4 +1,6 @@
-﻿namespace DotNetAgentic.Services;
+﻿using DotNetAgentic.Tools.Interfaces;
+
+namespace DotNetAgentic.Services;
 
 /// <summary>
 /// Interface for AI agent service that processes user input.
@@ -24,5 +26,5 @@ public interface IAgentService
     /// Gets all available tools that the agent can use.
     /// </summary>
     /// <returns>List of available tools</returns>
-    List<Tools.ITool> GetAvailableTools();
+    List<ITool> GetAvailableTools();
 }
