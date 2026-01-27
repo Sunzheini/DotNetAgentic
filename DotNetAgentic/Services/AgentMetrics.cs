@@ -1,5 +1,8 @@
 ﻿namespace DotNetAgentic.Services;
 
+/// <summary>
+/// The metrics data for the AI agent.
+/// </summary>
 public class AgentMetrics
 {
     public int TotalRequests { get; set; }

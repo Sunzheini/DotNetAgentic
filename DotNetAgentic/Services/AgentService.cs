@@ -10,8 +10,19 @@ namespace DotNetAgentic.Services;
 /// </summary>
 public class AgentService : IAgentService
 {
+    /// <summary>
+    /// The Semantic Kernel instance for AI interactions.
+    /// </summary>
     private readonly Kernel _kernel;
+    
+    /// <summary>
+    /// Registry of available tools for the agent.
+    /// </summary>
     private readonly ToolRegistry _toolRegistry;
+    
+    /// <summary>
+    /// The memory store for session history and summaries.
+    /// </summary>
     private readonly IMemoryStore _memoryStore;
     
     public AgentService(ToolRegistry toolRegistry, IMemoryStore memoryStore)
@@ -38,6 +49,7 @@ public class AgentService : IAgentService
         _memoryStore = memoryStore;
     }
     
+    /// <inheritdoc />
     public async Task<string> ProcessAsync(string input, string sessionId = "default")
     {
         if (string.IsNullOrWhiteSpace(input))
@@ -101,6 +113,15 @@ public class AgentService : IAgentService
         return response;
     }
     
+    /// <summary>
+    /// Parses the agent's response to check for tool invocation.
+    /// </summary>
+    /// <param name="response">
+    /// Response string from the agent.
+    /// </param>
+    /// <returns>
+    /// Returns either the original response or the tool execution result.
+    /// </returns>
     private string ParseToolResponse(string response)
     {
         if (response.StartsWith("TOOL:"))
@@ -115,11 +136,13 @@ public class AgentService : IAgentService
         return response;
     }
     
+    /// <inheritdoc />
     public async Task<string> ProcessWithMemoryAsync(string input, string sessionId)
     {
         // This method is now the same as ProcessAsync since we integrated memory there
         return await ProcessAsync(input, sessionId);
     }
-    
+
+    /// <inheritdoc />
     public List<ITool> GetAvailableTools() => _toolRegistry.GetAllTools();
 }
