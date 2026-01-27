@@ -6,7 +6,14 @@
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
 public class AgentOrchestrator
 {
+    /// <summary>
+    /// The planning agent responsible for creating task plans.
+    /// </summary>
     private readonly PlanningAgent _planningAgent;
+    
+    /// <summary>
+    /// The execution agent responsible for executing planned steps.
+    /// </summary>
     private readonly ExecutionAgent _executionAgent;
     
     // ReSharper disable once ConvertToPrimaryConstructor
@@ -16,6 +23,15 @@ public class AgentOrchestrator
         _executionAgent = executionAgent;
     }
     
+    /// <summary>
+    /// Executes a complex task by coordinating planning and execution agents.
+    /// </summary>
+    /// <param name="task">
+    /// The complex task description to be executed.
+    /// </param>
+    /// <returns>
+    /// Returns an OrchestrationResult containing details of the execution.
+    /// </returns>
     public virtual async Task<OrchestrationResult> ExecuteComplexTaskAsync(string task)
     {
         var result = new OrchestrationResult
@@ -53,6 +69,15 @@ public class AgentOrchestrator
         return result;
     }
     
+    /// <summary>
+    /// Parses the plan into individual steps.
+    /// </summary>
+    /// <param name="plan">
+    /// The plan string containing numbered steps.
+    /// </param>
+    /// <returns>
+    /// Returns a list of individual step descriptions.
+    /// </returns>
     private List<string> ParsePlan(string plan)
     {
         // Simple parsing - split by numbered lines
@@ -66,25 +91,18 @@ public class AgentOrchestrator
             .ToList();
     }
     
+    /// <summary>
+    /// Generates a summary of the orchestration result.
+    /// </summary>
+    /// <param name="result">
+    /// The orchestration result containing executed steps.
+    /// </param>
+    /// <returns>
+    /// Returns a summary string.
+    /// </returns>
     private Task<string> GenerateSummaryAsync(OrchestrationResult result)
     {
         return Task.FromResult($"Task completed in {result.Steps.Count} steps. " +
                                $"First step: {result.Steps.FirstOrDefault()?.Result?.Substring(0, Math.Min(50, result.Steps.FirstOrDefault()?.Result?.Length ?? 0))}...");
     }
-}
-
-public class OrchestrationResult
-{
-    public string OriginalTask { get; set; } = string.Empty;
-    public string Plan { get; set; } = string.Empty;
-    public List<ExecutionStep> Steps { get; set; } = new();
-    public string Summary { get; set; } = string.Empty;
-    public DateTime CompletedAt { get; set; }
-}
-
-public class ExecutionStep
-{
-    public string Description { get; set; } = string.Empty;
-    public string Result { get; set; } = string.Empty;
-    public DateTime Timestamp { get; set; }
 }
