@@ -2,16 +2,47 @@
 
 namespace DotNetAgentic.Services;
 
+/// <summary>
+/// Implements a metrics service for collecting and reporting agent performance metrics.
+/// </summary>
 public class MetricsService : IMetricsService
 {
+    /// <summary>
+    /// The list of recorded response times in milliseconds.
+    /// </summary>
     private readonly List<long> _responseTimes = new();
-    private readonly Dictionary<string, int> _toolUsage = new();
-    private readonly Dictionary<string, int> _endpointUsage = new();
-    private int _totalRequests = 0;
-    private int _successfulRequests = 0;
-    private int _failedRequests = 0;
-    private readonly object _lock = new();
     
+    /// <summary>
+    /// Tool usage counts.
+    /// </summary>
+    private readonly Dictionary<string, int> _toolUsage = new();
+    
+    /// <summary>
+    /// The endpoint usage counts.
+    /// </summary>
+    private readonly Dictionary<string, int> _endpointUsage = new();
+    
+    /// <summary>
+    /// The total number of requests recorded.
+    /// </summary>
+    private int _totalRequests = 0;
+    
+    /// <summary>
+    /// Successful request count.
+    /// </summary>
+    private int _successfulRequests = 0;
+    
+    /// <summary>
+    /// Failed request count.
+    /// </summary>
+    private int _failedRequests = 0;
+    
+    /// <summary>
+    /// Lock object for thread safety.
+    /// </summary>
+    private readonly object _lock = new();
+
+    /// <inheritdoc />
     public Task RecordRequestAsync(string endpoint, string toolName, long durationMs, bool success)
     {
         lock (_lock)
@@ -42,6 +73,7 @@ public class MetricsService : IMetricsService
         return Task.CompletedTask;
     }
     
+    /// <inheritdoc />
     public Task<AgentMetrics> GetMetricsAsync()
     {
         lock (_lock)
@@ -61,6 +93,7 @@ public class MetricsService : IMetricsService
         }
     }
     
+    /// <inheritdoc />
     public Task ResetMetricsAsync()
     {
         lock (_lock)

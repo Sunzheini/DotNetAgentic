@@ -8,9 +8,17 @@ namespace DotNetAgentic.Services;
 /// </summary>
 public class InMemoryStore : IMemoryStore
 {
+    /// <summary>
+    /// The in-memory dictionary storing session memories.
+    /// </summary>
     private readonly Dictionary<string, List<MemoryRecord>> _sessionMemories = new();
-    private readonly object _lock = new();
     
+    /// <summary>
+    /// The lock object for thread-safe operations.
+    /// </summary>
+    private readonly object _lock = new();
+
+    /// <inheritdoc />
     public Task SaveAsync(MemoryRecord record)
     {
         lock (_lock)
@@ -25,7 +33,8 @@ public class InMemoryStore : IMemoryStore
         
         return Task.CompletedTask;
     }
-    
+
+    /// <inheritdoc />
     public Task<List<MemoryRecord>> GetSessionHistoryAsync(string sessionId, int maxRecords = 10)
     {
         lock (_lock)
@@ -42,6 +51,7 @@ public class InMemoryStore : IMemoryStore
         return Task.FromResult(new List<MemoryRecord>());
     }
     
+    /// <inheritdoc />
     public Task<string> GetSessionSummaryAsync(string sessionId)
     {
         lock (_lock)
@@ -62,6 +72,7 @@ public class InMemoryStore : IMemoryStore
         }
     }
     
+    /// <inheritdoc />
     public Task ClearSessionAsync(string sessionId)
     {
         lock (_lock)

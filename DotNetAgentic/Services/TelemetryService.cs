@@ -2,11 +2,22 @@
 
 namespace DotNetAgentic.Services;
 
+/// <summary>
+/// Implements telemetry logging and retrieval for AI agent operations.
+/// </summary>
 public class TelemetryService : ITelemetryService
 {
+    /// <summary>
+    /// The in-memory list of telemetry logs.
+    /// </summary>
     private readonly List<TelemetryRecord> _logs = new();
-    private readonly object _lock = new();
     
+    /// <summary>
+    /// The lock object for thread-safe log access.
+    /// </summary>
+    private readonly object _lock = new();
+
+    /// <inheritdoc />
     public Task LogRequestAsync(string endpoint, string sessionId, string operation, string input,
         string output, long durationMs, string? error = null, Dictionary<string, object>? metadata = null)
     {
@@ -37,7 +48,8 @@ public class TelemetryService : ITelemetryService
         
         return Task.CompletedTask;
     }
-    
+
+    /// <inheritdoc />
     public Task<List<TelemetryRecord>> GetRecentLogsAsync(int count = 50)
     {
         lock (_lock)
@@ -49,6 +61,7 @@ public class TelemetryService : ITelemetryService
         }
     }
     
+    /// <inheritdoc />
     public Task<List<TelemetryRecord>> GetLogsBySessionAsync(string sessionId)
     {
         lock (_lock)
@@ -60,6 +73,7 @@ public class TelemetryService : ITelemetryService
         }
     }
     
+    /// <inheritdoc />
     public Task ClearLogsAsync()
     {
         lock (_lock)
