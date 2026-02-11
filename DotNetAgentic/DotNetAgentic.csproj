@@ -15,4 +15,8 @@
     <PackageReference Include="Tavily" Version="1.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Lab\" />
+  </ItemGroup>
+
 </Project>
